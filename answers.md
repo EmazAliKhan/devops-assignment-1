@@ -4,7 +4,7 @@ Name: Emaz Ali Khan
 Roll number: 65566
 Section: 120823
 Repository: https://github.com/EmazAliKhan/devops-assignment-1
-PR (mine -> partner): 
+PR (mine -> partner): https://github.com/sumaikasif/devops-assignment-1/pull/1
 PR (partner -> mine): 
 Partner: 
 
@@ -323,5 +323,188 @@ emaz@Asus:~/devops-assignment-1$ git log --oneline
 ```
 Explanation:
 `git remote add origin` links the local repo to the empty GitHub repo using the SSH URL. `git push -u origin main` uploads the commits and remembers the upstream, so later `git push` is enough. `git remote -v` shows the saved URL and `git log --oneline` shows the commit history.
+
+---
+
+## Part 4: Branching, merge conflicts and pull requests
+
+### Part 4, Task 1
+Commands:
+```bash
+cd ~/devops-assignment-1
+git checkout -b add-notes
+echo "line one" > notes.md
+git add notes.md && git commit -m "Add notes.md"
+echo "line two" >> notes.md
+git add notes.md && git commit -m "Edit notes.md"
+git checkout main
+git merge add-notes
+git branch -d add-notes
+git log --oneline --graph
+```
+Output:
+```
+emaz@Asus:~/devops-assignment-1$ git checkout -b add-notes
+Switched to a new branch 'add-notes'
+emaz@Asus:~/devops-assignment-1$ echo "line one" > notes.md
+emaz@Asus:~/devops-assignment-1$ git add notes.md && git commit -m "Add notes.md"
+[add-notes 121c310] Add notes.md
+ 1 file changed, 1 insertion(+)
+emaz@Asus:~/devops-assignment-1$ echo "line two" >> notes.md
+emaz@Asus:~/devops-assignment-1$ git add notes.md && git commit -m "Edit notes.md"
+[add-notes 26c7b13] Edit notes.md
+ 1 file changed, 1 insertion(+)
+emaz@Asus:~/devops-assignment-1$ git checkout main
+Switched to branch 'main'
+Your branch is up to date with 'origin/main'.
+emaz@Asus:~/devops-assignment-1$ git merge add-notes
+Updating 43fae3b..26c7b13
+Fast-forward
+ notes.md | 2 ++
+ 1 file changed, 2 insertions(+)
+emaz@Asus:~/devops-assignment-1$ git branch -d add-notes
+Deleted branch add-notes (was 26c7b13).
+emaz@Asus:~/devops-assignment-1$ git log --oneline --graph
+* 26c7b13 (HEAD -> main) Edit notes.md
+* 121c310 Add notes.md
+* 43fae3b (origin/main) Part 3: Git workflow evidence
+* b29539a Part 3: update README
+* b551525 Part 2: Linux command line
+* 6d87ba5 Part 1: DevOps concepts
+* b0d9764 Add answers.md header
+* 05ec5c2 Part 3: repo skeleton with README, answers, gitignore
+emaz@Asus:~/devops-assignment-1$
+
+```
+Explanation:
+The merge was a **fast-forward** because `main` had not moved since `add-notes` was created — Git simply moved the `main` pointer forward to the branch's last commit (`26c7b13`). No separate merge commit was needed because there were no diverging changes.
+
+### Part 4, Task 2
+Commands:
+```bash
+cd ~/devops-assignment-1
+echo "Hello from main" > greeting.txt
+git add greeting.txt && git commit -m "greeting from main"
+git checkout -b branch-a
+echo "Hello from A" > greeting.txt
+git add greeting.txt && git commit -m "greeting from A"
+git checkout main
+git checkout -b branch-b
+echo "Hello from B" > greeting.txt
+git add greeting.txt && git commit -m "greeting from B"
+git checkout main
+git merge branch-a
+git merge branch-b
+cat greeting.txt
+```
+Output:
+```
+emaz@Asus:~/devops-assignment-1$ echo "Hello from main" > greeting.txt
+emaz@Asus:~/devops-assignment-1$ git add greeting.txt && git commit -m "greeting from main"
+[main 2f8e4bc] greeting from main
+ 1 file changed, 1 insertion(+)
+emaz@Asus:~/devops-assignment-1$ git checkout -b branch-a
+Switched to a new branch 'branch-a'
+emaz@Asus:~/devops-assignment-1$ echo "Hello from A" > greeting.txt
+emaz@Asus:~/devops-assignment-1$ git add greeting.txt && git commit -m "greeting from A"
+[branch-a 0c78c33] greeting from A
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+emaz@Asus:~/devops-assignment-1$ git checkout main
+Switched to branch 'main'
+Your branch is ahead of 'origin/main' by 3 commits.
+  (use "git push" to publish your local commits)
+emaz@Asus:~/devops-assignment-1$ git checkout -b branch-b
+Switched to a new branch 'branch-b'
+emaz@Asus:~/devops-assignment-1$ echo "Hello from B" > greeting.txt
+emaz@Asus:~/devops-assignment-1$ git add greeting.txt && git commit -m "greeting from B"
+[branch-b c13d898] greeting from B
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+emaz@Asus:~/devops-assignment-1$ git checkout main
+Switched to branch 'main'
+Your branch is ahead of 'origin/main' by 3 commits.
+  (use "git push" to publish your local commits)
+emaz@Asus:~/devops-assignment-1$ git merge branch-a
+Updating 2f8e4bc..0c78c33
+Fast-forward
+ greeting.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+emaz@Asus:~/devops-assignment-1$ git merge branch-b
+Auto-merging greeting.txt
+CONFLICT (content): Merge conflict in greeting.txt
+Automatic merge failed; fix conflicts and then commit the result.
+emaz@Asus:~/devops-assignment-1$
+
+emaz@Asus:~/devops-assignment-1$ cat greeting.txt
+<<<<<<< HEAD
+Hello from A
+=======
+Hello from B
+>>>>>>> branch-b
+
+```
+Explanation:
+`<<<<<<< HEAD` marks the version from the current branch (`main`, which now has branch-a's content), `=======` separates the two versions, and `>>>>>>> branch-b` marks the end of the incoming version from branch-b. Git cannot resolve this automatically because both branches changed **the same line** in different ways — only a human knows which version (or combination) to keep.
+Commands to resolve:
+```bash
+nano greeting.txt    # keep both lines, delete the marker lines
+git add greeting.txt
+git commit -m "Resolve greeting conflict: keep both A and B"
+cat greeting.txt
+```
+Output:
+```
+emaz@Asus:~/devops-assignment-1$ nano greeting.txt
+emaz@Asus:~/devops-assignment-1$ git add greeting.txt
+emaz@Asus:~/devops-assignment-1$ git commit -m "Resolve greeting conflict: keep both A and B"
+[main 54ecdb2] Resolve greeting conflict: keep both A and B
+emaz@Asus:~/devops-assignment-1$ cat greeting.txt
+
+Hello from A
+Hello from B
+```
+Explanation:
+I kept both greetings on separate lines and removed all three conflict markers, then `git add` told Git the conflict is resolved and `git commit` finished the merge.
+
+### Part 4, Task 3
+PR links:
+- My PR to partner (sumaikasif): https://github.com/sumaikasif/devops-assignment-1/pull/1
+- Partner's PR to me:
+Explanation:
+I forked sumaikasif's repository (renamed my fork to `devops-assignment-1-sumaikasif` because I already had a repo with the original name), cloned it locally, created the branch `add-emaz-tip`, added `tips/emaz.md` with three lines of DevOps advice, committed, and pushed the branch. I then opened a pull request to sumaikasif's main branch with the title "Add Emaz's DevOps tip" and a clear description. I will review sumaikasif's pull request to my repository once it is opened: leave two comments (one on a specific line), approve, and merge.
+
+### Part 4, Task 4
+Commands:
+```bash
+cd ~/devops-assignment-1
+echo "Part 6 notes placeholder" >> notes.md
+git add notes.md
+git commit -m "Add Part 6 notes
+
+Closes #1"
+git push
+```
+Output:
+```
+emaz@Asus:~/sumaikasif-fork$ cd ~/devops-assignment-1
+emaz@Asus:~/devops-assignment-1$ echo "Part 6 notes placeholder" >> notes.md
+emaz@Asus:~/devops-assignment-1$ git add notes.md
+emaz@Asus:~/devops-assignment-1$ git commit -m "Add Part 6 notes
+> Closes #1"
+[main 4541492] Add Part 6 notes Closes #1
+ 1 file changed, 1 insertion(+)
+emaz@Asus:~/devops-assignment-1$ git push
+Enumerating objects: 24, done.
+Counting objects: 100% (23/23), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (14/14), done.
+Writing objects: 100% (21/21), 1.67 KiB | 342.00 KiB/s, done.
+Total 21 (delta 8), reused 0 (delta 0), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (8/8), completed with 1 local object.
+To github.com:EmazAliKhan/devops-assignment-1.git
+   43fae3b..4541492  main -> main
+```
+Issue link: https://github.com/EmazAliKhan/devops-assignment-1/issues/1
+Explanation:
+The commit message contains `Closes #1`, so when the commit reached `main` on GitHub, the issue was closed automatically by GitHub's keyword linking. The issue `Add Part 6 notes` had the `documentation` label as the task asked.
 
 ---
