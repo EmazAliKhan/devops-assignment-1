@@ -189,3 +189,139 @@ Explanation:
 `whoami` shows the current user is `emaz`. `groups` shows the groups that user belongs to — including `sudo`, which is the group allowed to run commands as superuser. Using `sudo` runs just one command with elevated rights, while the normal shell stays a normal user — so a typo or bad command cannot damage the whole system. Staying logged in as root means every command runs with full power and one mistake can break the machine.
 
 ---
+
+
+## Part 3: Git and GitHub
+
+### Part 3, Task 1
+Commands:
+```bash
+mkdir -p ~/devops-assignment-1
+cd ~/devops-assignment-1
+git init
+git config user.name "Emaz Ali Khan"
+git config user.email ">>> PASTE YOUR EMAIL HERE <<<"
+git config user.name
+git config user.email
+```
+Output:
+```
+emaz@Asus:~/devops-assignment-1$ git config user.name
+Emaz Ali Khan
+emaz@Asus:~/devops-assignment-1$ git config user.email
+emaz.kiet26@gmail.com
+
+```
+Explanation:
+`git init` creates the hidden `.git` folder that turns this folder into a repository. `git config user.name` and `user.email` set the identity recorded on every commit; the last two commands show the saved values.
+
+### Part 3, Task 2
+Commands:
+```bash
+touch README.md answers.md
+printf '*.log\ntmp/\n.env\n' > .gitignore
+touch server.log
+mkdir -p tmp && touch tmp/placeholder.txt
+touch .env
+git status
+git add README.md answers.md .gitignore
+git commit -m "Part 3: repo skeleton with README, answers, gitignore"
+```
+Output:
+```
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        .gitignore
+        README.md
+        answers.md
+        greeting.txt
+        notes.md
+
+nothing added to commit but untracked files present (use "git add" to track)
+emaz@Asus:~/devops-assignment-1$ git add README.md answers.md .gitignore notes.md greeting.txt screenshots scripts tips
+emaz@Asus:~/devops-assignment-1$ git commit -m "Part 3: repo skeleton with README, answers, gitignore"
+[main (root-commit) 05ec5c2] Part 3: repo skeleton with README, answers, gitignore
+ 5 files changed, 3 insertions(+)
+ create mode 100644 .gitignore
+ create mode 100644 README.md
+ create mode 100644 answers.md
+ create mode 100644 greeting.txt
+ create mode 100644 notes.md
+
+```
+Explanation:
+`.gitignore` lists `*.log`, `tmp/` and `.env`, so `git status` does not show `server.log`, the `tmp/` folder, or `.env`. Only `README.md`, `answers.md` and `.gitignore` are staged and committed. The ignored files stay on disk but Git never tracks them.
+
+### Part 3, Task 3
+Commands:
+```bash
+nano README.md
+git status
+git add README.md
+git status
+git commit -m "Part 3: update README"
+git status
+```
+Output:
+```
+emaz@Asus:~/devops-assignment-1$ git add README.md
+emaz@Asus:~/devops-assignment-1$ git status
+On branch main
+Your branch is up to date with 'origin/main'.
+
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   README.md
+
+emaz@Asus:~/devops-assignment-1$ git commit -m "Part 3: update README"
+[main b29539a] Part 3: update README
+ 1 file changed, 2 insertions(+)
+emaz@Asus:~/devops-assignment-1$ git status
+On branch main
+Your branch is ahead of 'origin/main' by 1 commit.
+  (use "git push" to publish your local commits)
+
+nothing to commit, working tree clean
+
+```
+Explanation:
+1. After editing README.md, `git status` shows it under "Changes not staged" — the change is in the **working directory**.
+2. After `git add`, `git status` shows it under "Changes to be committed" — the change is now in the **staging area**.
+3. After `git commit`, `git status` says "nothing to commit, working tree clean" — the change is saved in the **repository**.
+
+### Part 3, Task 4
+Commands:
+```bash
+git remote add origin git@github.com:EmazAliKhan/devops-assignment-1.git
+git branch -M main
+git push -u origin main
+git remote -v
+git log --oneline
+```
+Output:
+```
+emaz@Asus:~/devops-assignment-1$ git push -u origin main
+Enumerating objects: 4, done.
+Counting objects: 100% (4/4), done.
+Delta compression using up to 12 threads
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (4/4), 344 bytes | 344.00 KiB/s, done.
+Total 4 (delta 0), reused 0 (delta 0), pack-reused 0 (from 0)
+To github.com:EmazAliKhan/devops-assignment-1.git
+ * [new branch]      main -> main
+branch 'main' set up to track 'origin/main'.
+emaz@Asus:~/devops-assignment-1$ git remote -v
+origin  git@github.com:EmazAliKhan/devops-assignment-1.git (fetch)
+origin  git@github.com:EmazAliKhan/devops-assignment-1.git (push)
+emaz@Asus:~/devops-assignment-1$ git log --oneline
+05ec5c2 (HEAD -> main, origin/main) Part 3: repo skeleton with README, answers, gitignore
+
+```
+Explanation:
+`git remote add origin` links the local repo to the empty GitHub repo using the SSH URL. `git push -u origin main` uploads the commits and remembers the upstream, so later `git push` is enough. `git remote -v` shows the saved URL and `git log --oneline` shows the commit history.
+
+---
